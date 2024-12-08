@@ -36,12 +36,14 @@ def get_dataset(args) -> Dict[str, np.ndarray]:
     else:
         raise NotImplementedError(f"Unknow dataset key '{args.dataset}'")
 
-class Dataset(torch.utils.data.Dataset):
+class TimeDataset(torch.utils.data.Dataset):
     def __init__(self, data,  sequence_length):
         super().__init__()
-        self.data = data["tokens"]
+        self.data = torch.Tensor(np.array(data["tokens"]))
         self.sequence_length = sequence_length
-        self.dates = data["dates"]
+        self.dates = torch.Tensor(np.array(data["dates"]))
+        self.data.to(device="cuda")
+        self.dates.to(device="cuda")
         self.permutations = np.random.permutation(np.arange(len(self.data)))
 
     def __len__(self):
@@ -86,7 +88,7 @@ def get_dataloader(data, sequence_length, batch_size, seed=0, distributed_backen
 
     Returns both the dataloader and the sampler.
     """
-    dataset = Dataset(data, sequence_length=sequence_length)
+    dataset = TimeDataset(data, sequence_length=sequence_length)
     if distributed_backend and distributed_backend.get_world_size() > 1:
         sampler = torch.utils.data.DistributedSampler(
             dataset,
