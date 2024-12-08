@@ -37,12 +37,12 @@ def get_dataset(args) -> Dict[str, np.ndarray]:
         raise NotImplementedError(f"Unknow dataset key '{args.dataset}'")
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, data,dates,  sequence_length):
+    def __init__(self, data,  sequence_length):
         super().__init__()
-        self.data = data
+        self.data = data["tokens"]
         self.sequence_length = sequence_length
-        self.dates = dates
-        self.permutations = np.random.permutation(np.arange(len(self)))
+        self.dates = data["dates"]
+        # self.permutations = np.random.permutation(np.arange(len(self.data)))
 
     def __len__(self):
         total_length = len(self.data)
@@ -53,9 +53,8 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         seq_length = self.sequence_length
         idx = idx * seq_length
-        idx = self.permutations[idx]
+        # idx = self.permutations[idx]
         x = torch.from_numpy((self.data[idx : idx + seq_length]).astype(np.int64))
-
         y = torch.from_numpy(
             (self.data[idx + 1 : idx + 1 + seq_length]).astype(np.int64)
         )
@@ -68,8 +67,11 @@ class Dataset(torch.utils.data.Dataset):
 class DatesCollater:
     def __call__(self, batch):
         x = [t[0] for t in batch]
+        x = torch.stack(x)
         dates = [t[2] for t in batch]
+        dates = torch.stack(dates)
         y = [t[1] for t in batch]
+        y = torch.stack(y)
         return x,y,dates
 
     def collate(self, batch):

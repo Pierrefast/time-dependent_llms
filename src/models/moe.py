@@ -139,12 +139,16 @@ class MaskedMoE2(MoE):
         self.router = nn.Linear(config.n_embd, config.moe_num_experts + 1, bias=False)
 
     def forward(self, inputs: torch.Tensor, masks: torch.Tensor):
+        # print("inputs", inputs.shape)
+        # print("masks", masks.shape)
         inputs_squashed = inputs.view(-1, inputs.shape[-1])
         router_logits = self.router(inputs_squashed)
         masks = torch.cat(
-            (masks, torch.ones((masks.shape[0], 1), device=masks.device)),
-            dim=1
+            (masks, torch.ones((masks.shape[0], masks.shape[1], 1), device=masks.device)),
+            dim=2
         )
+        masks = masks.reshape((-1, masks.shape[2]))
+        # print("new mask shape", masks.shape)
         #print("shape of router logits", router_logits.shape)
         #print("shape of mask", mask.shape)
         # mask = mask.repeat_interleave(self._sequence_length, dim=0)
@@ -179,6 +183,11 @@ class TimeDependantMoE2(nn.Module):
     def __init__(self, config, mlp):
         super().__init__()
         self._mask_moe = MaskedMoE2(config, mlp)
+        self.num_experts = config.moe_num_experts
 
     def forward(self, x, masks):
-        return self._mask_moe(x, masks)
+        # print("original mask shape", masks.shape)
+        one_hot_masks = torch.zeros((masks.shape[0], masks.shape[1], self.num_experts)).to(masks.device)
+        one_hot_masks[:, :, masks.reshape(-1)] = 1
+        # print(one_hot_masks.shape)
+        return self._mask_moe(x, one_hot_masks)

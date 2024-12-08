@@ -19,15 +19,18 @@ def get_batch(dataloader, device="cpu"):
 
 
 @torch.no_grad()
-def eval(model, data_val_iter, device='cpu', max_num_batches=24, ctx=nullcontext()):
+def eval(model, data_val_iter, masked= True, device='cpu', max_num_batches=24, ctx=nullcontext()):
     assert model.training == False
 
     loss_list_val, acc_list = [], []
 
     for _ in range(max_num_batches): 
-        x, y = get_batch(data_val_iter, device=device)
+        x, y, dates = get_batch(data_val_iter, device=device)
         with ctx:
-            outputs = model(x, targets=y, get_logits=True)
+            if masked:
+                outputs = model(x, dates, targets=y, get_logits=True)
+            else:
+                outputs = model(x, date = None, targets=y, get_logits=True)
         val_loss = outputs['loss']
         loss_list_val.append(val_loss)
         acc_list.append((outputs['logits'].argmax(-1) == y).float().mean())

@@ -10,7 +10,7 @@ def none_or_str(value):
 def parse_args(base_parser, args, namespace):
     parser = base_parser
     # General training params
-    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--acc_steps', default=4, type=int)
     parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--data_seed', default=1337, type=int)
@@ -23,7 +23,7 @@ def parse_args(base_parser, args, namespace):
     parser.add_argument('--beta2', default=0.95, type=float)
     parser.add_argument('--scheduler', default='cos', choices=['linear', 'cos', 'none'])
     parser.add_argument('--opt', default='adamw', choices=['adamw', 'sgd'])
-    parser.add_argument('--eval_freq', default=200, type=int) # in iterations
+    parser.add_argument('--eval_freq', default=5, type=int) # in iterations
     parser.add_argument('--results_base_folder', default="./exps", type=str) 
     parser.add_argument('--grad_clip', default=0.0, type=float) # default value is 1.0 in NanoGPT
     # Dataset params
@@ -37,7 +37,7 @@ def parse_args(base_parser, args, namespace):
     parser.add_argument('--n_head', default=12, type=int)
     parser.add_argument('--n_layer', default=12, type=int) # depths in att + ff blocks
     parser.add_argument('--n_embd', default=768, type=int) # embedding size / hidden size ... 
-    parser.add_argument('--sequence_length', default=512, type=int)
+    parser.add_argument('--sequence_length', default=1024, type=int)
     parser.add_argument('--dtype', default=torch.bfloat16, type=torch.dtype)
     parser.add_argument('--bias', default=False, type=bool)
     parser.add_argument('--compile', action='store_true') # if true then model is compiled 
@@ -58,10 +58,10 @@ def parse_args(base_parser, args, namespace):
     parser.add_argument('--distributed_backend', default=None, type=str, required=False,
                         choices=distributed.registered_backends())  # distributed backend type
     parser.add_argument('--save_checkpoint_freq', default=None, type=int, required=False)
-    parser.add_argument('--moe', default= True, type=bool, required=False)
-    parser.add_argument('--moe_num_experts', default=0, type=int, required=False)
+    parser.add_argument('--moe', default= False, type=bool, required=False)
+    parser.add_argument('--moe_num_experts', default=7, type=int, required=False)
     parser.add_argument('--moe_softmax_order', default="softmax_topk", type = str, required=False, choices = ["softmax_topk", "topk_softmax"])
-    parser.add_argument('--moe_routing', default="masked", type=str, required=False)
+    parser.add_argument('--moe_routing', default=None, type=str, required=False)
     parser.add_argument('--moe_num_experts_per_tok', default=2, type=int, required=False)
     parser.add_argument('--moe_router_loss', default="load_balancing_only", type=str, required=False)
     parser.add_argument('--moe_aux_loss_factor', default=0.01, type=float, required=False)

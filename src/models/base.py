@@ -152,7 +152,10 @@ class Block(nn.Module):
 
     def forward(self, x, date, *args, **kwargs):
         x = x + self.attn(self.ln_1(x, *args, **kwargs))
-        x_, logits_and_experts = self.mlp(self.ln_2(x, *args, **kwargs), date)
+        if date == None:
+            x_, logits_and_experts = self.mlp(self.ln_2(x, *args, **kwargs))
+        else:
+            x_, logits_and_experts = self.mlp(self.ln_2(x, *args, **kwargs), date)
         x = x + x_
         return x, logits_and_experts
 

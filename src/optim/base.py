@@ -10,6 +10,7 @@ import copy
 import random
 import os
 import numpy as np
+from tqdm import tqdm
 from .utils import eval, get_batch, save_checkpoint
 
 
@@ -69,9 +70,7 @@ def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, ba
     for _ in range(substep % num_substeps_per_epoch):
         get_batch(data_train_iter, device=extra_args.device)
 
-    
-    while itr < iterations:
-            
+    for itr in tqdm(range(1, iterations+1)):        
         for microstep_idx in range(acc_steps):  # gradient accumulation
             x, y, dates = get_batch(data_train_iter, device=extra_args.device)
             
@@ -80,7 +79,7 @@ def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, ba
                     if masked:
                         outputs = model(x, dates, targets=y)
                     else:
-                        outputs = model(x, targets=y)
+                        outputs = model(x, date = None, targets=y)
 
 
             loss = outputs['loss'] / acc_steps
@@ -103,7 +102,6 @@ def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, ba
         opt.step()
         scheduler.step()
         opt.zero_grad(set_to_none=True)
-        itr += 1
 
         if itr % eval_freq == 0 or itr == iterations: # from here it's only evaluation code, all the training is above
             if distributed_backend.is_master_process():

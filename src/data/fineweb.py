@@ -11,14 +11,16 @@ FINEWEB_DATA_PATH = os.path.join(os.path.dirname(__file__), "datasets/fineweb/")
 tknzr = tiktoken.get_encoding("gpt2")
 
 
-def get_fineweb_data(num_proc=40):
+def get_fineweb_data(num_proc=128):
     if not os.path.exists(os.path.join(FINEWEB_DATA_PATH, "train.bin")):
         os.makedirs(FINEWEB_DATA_PATH, exist_ok=True)
         dataset = load_dataset("HuggingFaceFW/fineweb", name="sample-10BT", cache_dir="/mloscratch/homes/lcostes/MLerveilleux_project_2/huggingface_cache/datasets")
-
+        nb_points = 100_000
         split_dataset = dataset["train"].train_test_split(
-            test_size=0.0005, seed=2357, shuffle=False
+            test_size=0.0005, seed=2357, shuffle=True
         )
+        split_dataset["train"] = split_dataset["train"].select(range(nb_points))
+
         split_dataset["val"] = split_dataset.pop("test")
 
         def process(example):
@@ -48,9 +50,10 @@ def get_fineweb_data(num_proc=40):
         for split, dset in tokenized.items():
             arr_len = np.sum(dset["len"])
             filename = os.path.join(FINEWEB_DATA_PATH, f"{split}.bin")
+            dates_filename = os.path.join(FINEWEB_DATA_PATH, f"{split}_dates.bin")
             dtype = np.uint16  # (can do since enc.max_token_value == 50256 is < 2**16)
             arr = np.memmap(filename, dtype=dtype, mode="w+", shape=(arr_len,))
-            dates = np.memmap(filename, mode="w+", shape=(arr_len,), dtype=np.uint8)
+            dates = np.memmap(dates_filename, mode="w+", shape=(arr_len,), dtype=np.uint8)
             total_batches = min(1024, len(dset))
 
             idx = 0
@@ -79,11 +82,15 @@ def get_fineweb_data(num_proc=40):
     val_dates = np.memmap(
         os.path.join(FINEWEB_DATA_PATH, "val_dates.bin"), dtype=np.uint8, mode="r"
     )
-    maxi = max(train_dates.max(), val_dates.max())
-    train_dates_one_hot = np.zeros((len(train_data), maxi + 1))
-    train_dates_one_hot[:, train_dates] = 1
-
-    val_dates_one_hot = np.zeros((len(val_dates), maxi + 1))
-    val_dates_one_hot[:, val_dates] = 1
-
-    return {"train": {"tokens": train_data, "dates": train_dates_one_hot}, "val": {"tokens": val_data, "dates": val_dates_one_hot}}
+    # print("one hotting")
+    # maxi = max(train_dates.max(), val_dates.max())
+    # def one_hot(i):
+    #     o = np.zeros(n)
+    #     o[i] = 1
+    #     return o
+    # from multiprocessing import Pool
+    # with Pool(processes=128) as P:
+    #     train_dates_one_hot = P.map(one_hot, train_dates)
+    #     val_dates_one_hot = one_hot(maxi+1, val_dates)
+    # print("done")
+    return {"train": {"tokens": train_data, "dates": train_dates}, "val": {"tokens": val_data, "dates": val_dates}}
