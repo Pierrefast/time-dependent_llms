@@ -39,9 +39,9 @@ def get_dataset(args) -> Dict[str, np.ndarray]:
 class TimeDataset(torch.utils.data.Dataset):
     def __init__(self, data,  sequence_length):
         super().__init__()
-        self.data = torch.Tensor(np.array(data["tokens"]))
+        self.data = torch.Tensor(np.array(data["tokens"]), dtype = torch.int64)
         self.sequence_length = sequence_length
-        self.dates = torch.Tensor(np.array(data["dates"]))
+        self.dates = torch.Tensor(np.array(data["dates"]), dtype = torch.uint8)
         self.data.to(device="cuda")
         self.dates.to(device="cuda")
         self.permutations = np.random.permutation(np.arange(len(self.data)))
@@ -56,13 +56,16 @@ class TimeDataset(torch.utils.data.Dataset):
         seq_length = self.sequence_length
         idx = idx * seq_length
         idx = self.permutations[idx]
-        x = torch.from_numpy((self.data[idx : idx + seq_length]).astype(np.int64))
-        y = torch.from_numpy(
-            (self.data[idx + 1 : idx + 1 + seq_length]).astype(np.int64)
-        )
-        dates = torch.from_numpy(
-            (self.dates[idx: idx + seq_length]).astype(np.int64)
-        )
+        #x = torch.from_numpy((self.data[idx : idx + seq_length]).astype(np.int64))
+        #y = torch.from_numpy(
+        #    (self.data[idx + 1 : idx + 1 + seq_length]).astype(np.int64)
+        #)
+        #dates = torch.from_numpy(
+        #    (self.dates[idx: idx + seq_length]).astype(np.int64)
+        #)
+        x = self.data[idx : idx + seq_length]
+        y = self.data[idx + 1 : idx + 1 + seq_length]
+        dates = self.dates[idx: idx + seq_length]
         return (x, y, dates)
 
 
