@@ -39,9 +39,9 @@ def get_dataset(args) -> Dict[str, np.ndarray]:
 class TimeDataset(torch.utils.data.Dataset):
     def __init__(self, data,  sequence_length):
         super().__init__()
-        self.data = torch.Tensor(np.array(data["tokens"]), dtype = torch.int64)
+        self.data = torch.from_numpy(np.array(data["tokens"]).astype(np.int64))
         self.sequence_length = sequence_length
-        self.dates = torch.Tensor(np.array(data["dates"]), dtype = torch.uint8)
+        self.dates = torch.from_numpy(np.array(data["dates"]).astype(np.uint8))
         self.data.to(device="cuda")
         self.dates.to(device="cuda")
         self.permutations = np.random.permutation(np.arange(len(self.data)))
