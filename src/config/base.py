@@ -63,7 +63,7 @@ def parse_args(base_parser, args, namespace):
     parser.add_argument('--moe_softmax_order', default="softmax_topk", type = str, required=False, choices = ["softmax_topk", "topk_softmax"])
     parser.add_argument('--moe_routing', default=None, type=str, required=False)
     parser.add_argument('--moe_num_experts_per_tok', default=2, type=int, required=False)
-    parser.add_argument('--moe_router_loss', default="load_balancing_z_loss", type=str, required=False)
+    parser.add_argument('--moe_router_loss', default="load_balancing_only", type=str, required=False)
     parser.add_argument('--moe_aux_loss_factor', default=0.01, type=float, required=False)
     parser.add_argument('--moe_z_loss_factor', default=0.0, type=float, required=False)
     parser.add_argument('--mlp_dim_exp_factor', default=1, type=int, required=False)
