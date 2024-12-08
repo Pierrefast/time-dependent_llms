@@ -138,17 +138,17 @@ class MaskedMoE2(MoE):
         self.experts.append(DummyExpert(config.n_embd))
         self.router = nn.Linear(config.n_embd, config.moe_num_experts + 1, bias=False)
 
-    def forward(self, inputs: torch.Tensor, mask: torch.Tensor):
+    def forward(self, inputs: torch.Tensor, masks: torch.Tensor):
         inputs_squashed = inputs.view(-1, inputs.shape[-1])
         router_logits = self.router(inputs_squashed)
-        mask = torch.cat(
-            (mask, torch.ones((mask.shape[0], 1), device=mask.device)),
+        masks = torch.cat(
+            (masks, torch.ones((masks.shape[0], 1), device=masks.device)),
             dim=1
         )
-        print("shape of router logits", router_logits.shape)
-        print("shape of mask", mask.shape)
-        mask = mask.repeat_interleave(self._sequence_length, dim=0)
-        router_logits = router_logits * mask
+        #print("shape of router logits", router_logits.shape)
+        #print("shape of mask", mask.shape)
+        # mask = mask.repeat_interleave(self._sequence_length, dim=0)
+        router_logits = router_logits * masks
 
         # note that selected experts will be the same for all orders:
         # softmax doesnt change top-k, but the weights are different
@@ -180,5 +180,5 @@ class TimeDependantMoE2(nn.Module):
         super().__init__()
         self._mask_moe = MaskedMoE2(config, mlp)
 
-    def forward(self, x, mask):
-        return self._mask_moe(x, mask)
+    def forward(self, x, masks):
+        return self._mask_moe(x, masks)
