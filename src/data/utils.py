@@ -42,7 +42,7 @@ class Dataset(torch.utils.data.Dataset):
         self.data = data["tokens"]
         self.sequence_length = sequence_length
         self.dates = data["dates"]
-        # self.permutations = np.random.permutation(np.arange(len(self.data)))
+        self.permutations = np.random.permutation(np.arange(len(self.data)))
 
     def __len__(self):
         total_length = len(self.data)
@@ -53,7 +53,7 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         seq_length = self.sequence_length
         idx = idx * seq_length
-        # idx = self.permutations[idx]
+        idx = self.permutations[idx]
         x = torch.from_numpy((self.data[idx : idx + seq_length]).astype(np.int64))
         y = torch.from_numpy(
             (self.data[idx + 1 : idx + 1 + seq_length]).astype(np.int64)

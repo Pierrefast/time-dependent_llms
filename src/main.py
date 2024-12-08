@@ -46,7 +46,7 @@ def main(args):
     
     data = get_dataset(args) # data is a dict: {'train': train_tokenized, 'val': eval_tokenized}
     if args.data_in_ram:
-        data = {'train': np.array(data['train']), 'val': np.array(data['val'])}
+        data = {'train': {"tokens" : np.array(data['train']["tokens"]), "dates":np.array(data['train']["dates"])}, 'val': {"tokens" : np.array(data['val']["tokens"]), "dates":np.array(data['val']["dates"])}}
         
     print(f"Num training tokens: {len(data['train']["tokens"])}")
     print(f"Num validation tokens: {len(data['val']["tokens"])}")

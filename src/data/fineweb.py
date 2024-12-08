@@ -17,7 +17,7 @@ def get_fineweb_data(num_proc=128):
         dataset = load_dataset("HuggingFaceFW/fineweb", name="sample-10BT", cache_dir="/mloscratch/homes/lcostes/MLerveilleux_project_2/huggingface_cache/datasets")
         nb_points = 100_000
         split_dataset = dataset["train"].train_test_split(
-            test_size=0.0005, seed=2357, shuffle=True
+            test_size=0.0005, seed=2357, shuffle=False
         )
         split_dataset["train"] = split_dataset["train"].select(range(nb_points))
 
