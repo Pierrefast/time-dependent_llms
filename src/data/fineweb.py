@@ -14,7 +14,7 @@ tknzr = tiktoken.get_encoding("gpt2")
 def get_fineweb_data(num_proc=40):
     if not os.path.exists(os.path.join(FINEWEB_DATA_PATH, "train.bin")):
         os.makedirs(FINEWEB_DATA_PATH, exist_ok=True)
-        dataset = load_dataset("HuggingFaceFW/fineweb", name="sample-10BT")
+        dataset = load_dataset("HuggingFaceFW/fineweb", name="sample-10BT", cache_dir="/mloscratch/homes/lcostes/MLerveilleux_project_2/huggingface_cache/datasets")
 
         split_dataset = dataset["train"].train_test_split(
             test_size=0.0005, seed=2357, shuffle=True
