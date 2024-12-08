@@ -10,7 +10,7 @@ def none_or_str(value):
 def parse_args(base_parser, args, namespace):
     parser = base_parser
     # General training params
-    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--acc_steps', default=4, type=int)
     parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--data_seed', default=1337, type=int)
@@ -58,6 +58,17 @@ def parse_args(base_parser, args, namespace):
     parser.add_argument('--distributed_backend', default=None, type=str, required=False,
                         choices=distributed.registered_backends())  # distributed backend type
     parser.add_argument('--save_checkpoint_freq', default=None, type=int, required=False)
+    parser.add_argument('--moe', default= True, type=bool, required=False)
+    parser.add_argument('--moe_num_experts', default=0, type=int, required=False)
+    parser.add_argument('--moe_softmax_order', default="softmax_topk", type = str, required=False)
+    parser.add_argument('--moe_routing', default=None, type=str, required=False)
+    parser.add_argument('--moe_num_experts_per_tok', default=2, type=int, required=False)
+    parser.add_argument('--moe_router_loss', default="load_balancing_z_loss", type=str, required=False)
+    parser.add_argument('--moe_aux_loss_factor', default=0.01, type=float, required=False)
+    parser.add_argument('--moe_z_loss_factor', default=0.0, type=float, required=False)
+    parser.add_argument('--mlp_dim_exp_factor', default=1, type=int, required=False)
+
+
 
     args = parser.parse_args(args, namespace)
 
