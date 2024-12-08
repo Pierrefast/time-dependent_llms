@@ -37,10 +37,12 @@ def get_dataset(args) -> Dict[str, np.ndarray]:
         raise NotImplementedError(f"Unknow dataset key '{args.dataset}'")
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, data, sequence_length):
+    def __init__(self, data,dates,  sequence_length):
         super().__init__()
         self.data = data
         self.sequence_length = sequence_length
+        self.dates = dates
+        self.permutations = np.random.permutation(np.arange(len(self)))
 
     def __len__(self):
         total_length = len(self.data)
@@ -51,12 +53,27 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         seq_length = self.sequence_length
         idx = idx * seq_length
+        idx = self.permutations[idx]
         x = torch.from_numpy((self.data[idx : idx + seq_length]).astype(np.int64))
 
         y = torch.from_numpy(
             (self.data[idx + 1 : idx + 1 + seq_length]).astype(np.int64)
         )
-        return x, y
+        dates = torch.from_numpy(
+            (self.dates[idx: idx + seq_length]).astype(np.int64)
+        )
+        return (x, y, dates)
+
+
+class DatesCollater:
+    def __call__(self, batch):
+        x = [t[0] for t in batch]
+        dates = [t[2] for t in batch]
+        y = [t[1] for t in batch]
+        return x,y,dates
+
+    def collate(self, batch):
+        return self(batch)
 
 
 def get_dataloader(data, sequence_length, batch_size, seed=0, distributed_backend=None):
@@ -85,6 +102,7 @@ def get_dataloader(data, sequence_length, batch_size, seed=0, distributed_backen
         dataset,
         sampler=sampler,
         batch_size=batch_size,
+        collate_fn = DatesCollater(),
         num_workers=4,
     )
     return loader, sampler

@@ -17,7 +17,7 @@ def get_fineweb_data(num_proc=40):
         dataset = load_dataset("HuggingFaceFW/fineweb", name="sample-10BT", cache_dir="/mloscratch/homes/lcostes/MLerveilleux_project_2/huggingface_cache/datasets")
 
         split_dataset = dataset["train"].train_test_split(
-            test_size=0.0005, seed=2357, shuffle=True
+            test_size=0.0005, seed=2357, shuffle=False
         )
         split_dataset["val"] = split_dataset.pop("test")
 
@@ -54,6 +54,7 @@ def get_fineweb_data(num_proc=40):
                     num_shards=total_batches, index=batch_idx, contiguous=True
                 ).with_format("numpy")
                 arr_batch = np.concatenate(batch["ids"])
+                date_batch = np.concatenate(batch["dates"])
                 # Write into mmap
                 arr[idx : idx + len(arr_batch)] = arr_batch
                 idx += len(arr_batch)

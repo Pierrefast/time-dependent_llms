@@ -144,7 +144,7 @@ def main(args):
 
     stats = train(model, opt, data, args.data_seed, scheduler, args.iterations, args.acc_steps, args.batch_size, args.sequence_length, 
                   eval_freq=args.eval_freq, 
-                  distributed_backend=distributed_backend,
+                  distributed_backend=distributed_backend,masked=config.moe_routing=="masked",
                   ckpt_path=f"{ckpt_path}/ckpt.pt", itr=itr, rng_state_dict=rng_state_dict, extra_args=args)
     
     args.device = None

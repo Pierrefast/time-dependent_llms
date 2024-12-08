@@ -13,7 +13,7 @@ import numpy as np
 from .utils import eval, get_batch, save_checkpoint
 
 
-def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, batch_size, sequence_length, eval_freq, ckpt_path, distributed_backend,extra_args, itr=0,rng_state_dict=None):
+def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, batch_size, sequence_length, eval_freq, ckpt_path, distributed_backend,extra_args,masked = False, itr=0,rng_state_dict=None):
     device_type = 'cuda' if 'cuda' in str(extra_args.device) else 'cpu'
     type_ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(
         device_type=device_type, dtype=torch.bfloat16)  # extra_args.dtype)
@@ -73,11 +73,15 @@ def train_base(model, opt, data, data_seed, scheduler, iterations, acc_steps, ba
     while itr < iterations:
             
         for microstep_idx in range(acc_steps):  # gradient accumulation
-            x, y = get_batch(data_train_iter, device=extra_args.device)
+            x, y, dates = get_batch(data_train_iter, device=extra_args.device)
             
             with type_ctx:
                 with distributed_backend.get_context_for_microstep_forward(model=model, microstep_idx=microstep_idx, gradient_accumulation_steps=acc_steps):
-                    outputs = model(x, targets=y)
+                    if masked:
+                        outputs = model(x, dates, targets=y)
+                    else:
+                        outputs = model(x, targets=y)
+
 
             loss = outputs['loss'] / acc_steps
             loss.backward()
