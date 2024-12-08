@@ -17,14 +17,14 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from moe import (
+from .moe import (
     #ExpertChoiceMoE,
     MaskedMoE2,
     TimeDependantMoE2,
     MoE,
 )
 
-from aux_losses import (
+from .aux_losses import (
     entropy_reg,
     load_balancing_loss,
     router_z_loss,
