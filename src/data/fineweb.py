@@ -60,7 +60,7 @@ def get_fineweb_data(num_proc=40):
                     num_shards=total_batches, index=batch_idx, contiguous=True
                 ).with_format("numpy")
                 arr_batch = np.concatenate(batch["ids"])
-                date_batch = np.concatenate(batch["dates"])
+                date_batch = np.concatenate(batch["date"])
                 # Write into mmap
                 arr[idx : idx + len(arr_batch)] = arr_batch
                 dates[idx : idx + len(date_batch)] = date_batch
